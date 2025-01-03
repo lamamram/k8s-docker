@@ -1,0 +1,8 @@
+*.sh eol=lf
+*.conf eol=lf
+*.yml eol=lf
+*.php eol=lf
+*.sql eol=lf
+Dockerfile eol=lf
+Vagrantfile eol=lf
+insecure_private_key eol=lf
