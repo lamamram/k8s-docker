@@ -1,0 +1,126 @@
+---
+
+networks:
+  stack-php:
+    # fixer le nom du réseau (désactive la politique de nommage par défaut de compose)
+    name: stack-php
+    driver: bridge
+    # Internet Protocal Adress Management
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24
+          gateway: 172.18.0.1
+
+# il faut déclarer les volumes nommés
+volumes:
+  db_data:
+    name: db_data
+  ## Volumes NFS utilisés pour nos services
+  nfs-vol-db:
+    name: nfs-vol-db
+    # on aura une copie des fichiers originels du serveur en local
+    driver: local
+    driver_opts:
+      type: nfs
+      # nomenclature NFS
+      o: addr=formation.lan,ro
+      device: :/mnt/nfs-dir/initdb.d
+  nfs-vol-php:
+    name: nfs-vol-php
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=formation.lan,ro
+      device: :/mnt/nfs-dir/app
+  nfs-vol-nginx:
+    name: nfs-vol-nginx
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=formation.lan,ro
+      device: :/mnt/nfs-dir/nginx-conf.d
+
+
+# service = Ensemble de réplicas de conteneurs, dispatchés dans un cluster
+services:
+  db:
+    container_name: stack-php-db 
+    image: mariadb:lts-ubi
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - stack-php
+    volumes:
+      # - ./mariadb-init.sql:/docker-entrypoint-initdb.d/mariadb-init.sql:ro
+      # dossier à gauche: dossier à droite 
+      - nfs-vol-db:/docker-entrypoint-initdb.d:ro
+      - db_data:/var/lib/mysql
+    # valeurs arbitraire
+    profiles:
+      - build
+
+  php-fpm:
+    container_name: stack-php-fpm 
+    image: bitnami/php-fpm:8.4-debian-12
+    restart: unless-stopped
+    networks:
+      - stack-php
+    volumes:
+      # - ./index.php:/srv/index.php:ro
+      - nfs-vol-php:/srv
+    # php dépend de la base de donnée => fixe un ordre de lancement
+    depends_on:
+      - db
+    profiles:
+      - build
+
+  nginx:
+    container_name: stack-php-nginx
+    image: nginx:1.27.3-bookworm-perl
+    restart: unless-stopped
+    networks:
+      - stack-php
+    ports:
+      - 8080:80
+    volumes:
+      # - ./vhost.conf:/etc/nginx/conf.d/vhost.conf:ro
+      - nfs-vol-nginx:/etc/nginx/conf.d
+    depends_on:
+      - php-fpm
+    profiles:
+      - build
+  
+
+  ## TACHES D'ADMINISTRATION
+  ## pour lancer une tâche individuelle éphèmère: docker compose run --rm <service-name>
+
+
+  # backup à froid (en utilisant un conteneur en exécution)
+  # on va:
+  # 1/ réutiliser le volume de bdd (db_data)
+  # 2/ compresser le dump en gz
+  # 3 on va injecter le dump.tar.gz en local (avec un bind mount) 
+  backup:
+    image: alpine:3.21.0
+    # utilisation du réseau qui s'appelle 'none' => pas de réseau
+    network_mode: none
+    volumes:
+      # 1/ réutiliser le volume de bdd (db_data) 
+      #    => on peut utiliser plusieurs un même volume dans plusieurs conteneurs
+      #    => docker création auto. du dossier destination (/data) 
+      - db_data:/data
+      # 3/
+      #    => création auto. (en local ET dans le ctn)
+      - ./dump:/dump
+    # command: ["tar", "-cvzf", "/dump/dump.tar.gz", "/data"]
+    # command:
+    #   - tar
+    #   - -cvzf
+    #   - /dump/dump.tar.gz
+    #   - /data
+    command: tar -cvzf /dump/dump.tar.gz /data
+    profiles:
+      - task
+    
+    
