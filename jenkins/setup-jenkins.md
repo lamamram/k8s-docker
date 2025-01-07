@@ -154,9 +154,26 @@ docker compose ps
 ![](./schemas/schema-jenkins-docker.png)
 
 
-## jeton d'accès pour check git
+## utilisation de la CLI jenkins pour automatisation
 
-* administrer jenkins
-* securité
-* Git plugin notifyCommit access tokens
-* access token > 465d3a19b22575c99e0c0f4e433905e7
+* account > sécurité
+* api Token > generate > save
+* Dashboard > administrer Jenkins > jenkins CLI
+
+```bash
+## on the VM
+cd ~/jenkins
+curl -k -u admin:roottoor https://formation.lan:8443/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
+
+## environment variables to manage calls
+# export JENKINS_URL=https://formation.lan:8443/
+# issue with autosigned cert donc => httpPort in compose &
+export JENKINS_URL=http://formation.lan:8080/
+export JENKINS_USER_ID=admin
+export JENKINS_API_TOKEN=119fddeabf44330e5fab0ff369d4bb94ac
+
+java -jar jenkins-cli.jar install-plugin docker-plugin docker-workflow
+## to confirm the installs
+docker compose restart
+```
+
