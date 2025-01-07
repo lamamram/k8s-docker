@@ -1,56 +1,58 @@
-## nous allons utiliser une image debian12
 FROM debian:12-slim
 
-## documenter l'image
 LABEL author="matt"
-LABEL created_at="2025-01-06"
+LABEL created_at="2025-01-07"
 LABEL stack="java"
 LABEL stack.version="1.0"
 
-ENV USER=tomcat
+# REMARQUE: ces variables d'environnement ne peuvent pas être modifiées 
+#          : qu'au moment du docker run --env HOME 
+ENV HOME=/opt/tomcat/webapps
 
 ARG TOMCAT_VERSION_MAJOR=9
 ARG TOMCAT_VERSION_FULL
 
-## installer java (apt-get)
-## et nettoyer le dépôt apt après
-## ajouter un dossier /opt/tomcat
-## injecter le fichier https://downloads.apache.org/tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.tar.gz dans ce dossier
-## décomprésser dans ce dossier sans dossier intermédiaire 
-## et supprimer l'archive
-# ADD https://downloads.apache.org/tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.tar.gz /opt/tomcat
-## ajouter un utilisateur tomcat avec le dossier /opt/tomcat comme home et le groupe propriétairers /opt/tomcat/
-## télécharger l'application sample https://tomcat.apache.org/tomcat-10.1-doc/appdev/sample/sample.war dans le dossier /opt/tomcat/webapps 
-## spécifier le propriétaire et groupe à tomcat 
-RUN apt-get update -q && apt-get install -y -q openjdk-17-jre-headless curl && \
-    mkdir /opt/tomcat && \
-    curl https://downloads.apache.org/tomcat/tomcat-${TOMCAT_VERSION_MAJOR}/v${TOMCAT_VERSION_FULL}/bin/apache-tomcat-${TOMCAT_VERSION_FULL}.tar.gz | \
-    tar -xvz -C /opt/tomcat --strip-components=1 && \
+## BEST PRACTICE: couches qui changent peu et lentes en premier
+## BEST PRACTICE: enchaîner avec "&&" les RUN qui créént / modifient / suppriment les mêmes objets
+## BEST PRACTICE: minimiser les couches (&& \)
+## BEST PRACTICE: utiliser des chemins absolus
+## BEST PRACTICE: on a pas besoin de créer l'archive tomcat en tant que fichier
+##              : puisque curl et tar peuvent fonctionner en flux ( | )
+RUN mkdir /opt/tomcat && \
+    apt-get update -q && apt-get install -yq openjdk-17-jre-headless curl && \
     rm -rf /var/lib/apt/lists/* && \
-    useradd -d /opt/tomcat -U tomcat && \
+    curl https://downloads.apache.org/tomcat/tomcat-${TOMCAT_VERSION_MAJOR}/v${TOMCAT_VERSION_FULL}/bin/apache-tomcat-${TOMCAT_VERSION_FULL}.tar.gz | \
+    tar -xzv -C /opt/tomcat --strip-components=1 && \
+    useradd -M -d /opt/tomcat -U tomcat && \
     curl https://tomcat.apache.org/tomcat-10.1-doc/appdev/sample/sample.war -o /opt/tomcat/webapps/sample.war && \
     chown -R tomcat:tomcat /opt/tomcat
 
-## spécifier le dossier dans lequel on arrive dans le conteneur
-WORKDIR /opt/tomcat/webapps
+WORKDIR ${HOME}
 
-## changer l'utilisateur à tomcat quand on exécute un conteneur
-USER ${USER}
+USER tomcat
 
-## persister le dossier home pour accéder ou sauvegarder les apps
 VOLUME [ "/opt/tomcat/webapps" ]
 
-## pour communiquer avec httpd avec le port par défaut de tomcat  ???
 EXPOSE 8080
 
-## exécuter de manière dynamique (avec substitution) le binaire en foreground catalina.sh vs startup.sh ???
-## et ajouter la sous commande pour lancer en one shot run ou start ???
-CMD [ "/opt/tomcat/bin/catalina.sh", "run" ]
+CMD ["/opt/tomcat/bin/catalina.sh", "run" ]
 
+# après le lancement du conteneur lié à cette image (docker run)
+# 1/ on va attendre 3s (start-period)
+# 2/ on exécute le CMD du HEALTHCHECK qui DOIT PROUVER que le conteneur est lancé correctement
+# 3.1/ soit le CMD du HEALTHCHECK termine avant 5s (le timeout) avec un code de retour 0 (SUCESS)
+#      => le STATUS du docker ps spécifie "healthy"
+# 3.2/ soit le CMD du HEALTHCHECK termine avant 5s (le timeout) avec un code de retour NON-0 (FAIL)
+#      => on décrémente le paramètre retries (3) => on peut réesssayer 3x
+#      => on attend 2s (interval) pour réessayer
+# 3.3/ soit le CMD du HEALTHCHECK termine APRES le timeout => retry + interval
+# Dans tous les cas si le CMD du HEALTHCHECK finit en non-0 (FAIL) alors
+#      => le STATUS du docker ps spécifie "unhealthy" 
 
+## WARNING: CMD du HEALTHCHECK ne fonctionne pas avec une liste de JSON ["" , ""]
 HEALTHCHECK \
             --start-period=3s \
-            --timeout=10s \
+            --timeout=5s \
             --retries=3 \
-            --interval=3s \
+            --interval=2s \
             CMD grep "Server startup" /opt/tomcat/logs/catalina.*.log
