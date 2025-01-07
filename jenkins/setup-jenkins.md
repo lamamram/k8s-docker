@@ -30,6 +30,18 @@ docker compose ps
   - docker compose exec -it jenkins /bin/bash
   - docker exec -it agent /bin/bash 
 
+### ajouter l'authentification
+
+* => warning sur l'absence d'authentification
+* règlage de sécurité 
+  + utiliser la base de données d'utilisateur
+  + accès aux fonctionnalités pour les users connectés
+  + save
+* creer le 1er admin user 
+* dashboard menu utilisateur
+  + securité
+  + jeton d'API > 111883a1f836ce749937f0c23d3c858e52
+
 ### type de jenkins
 
 * pipeline:
@@ -63,6 +75,9 @@ docker compose ps
     + section "Git Host Key Verification Configuration" > **no verification**
   - espace du projet stack-java
   - configurer
+  - Build Triggers
+    + Scrutation de l'outil de gestion de version
+    + sans planning car on va utiliser un hook git
   - section pipeline
     + definition => **pipeline from SCM**
     + SCM > git
@@ -83,7 +98,9 @@ docker compose ps
     + sécurité
     + section "git notifyCommit"
     + création d'un token
-    + pas de token côté git donc => `-Dhudson.plugins.git.GitStatus.NOTIFY_COMMIT_ACCESS_CONTROL=disabled` dans le conteneur jenkins
+    + WARNING: le hook s'utilise dans le cadre d'un WEBHOOK
+      * il faudrait un autre token côté git
+      * pas de token côté git (contrairement à github/gitlab/...) donc => `-Dhudson.plugins.git.GitStatus.NOTIFY_COMMIT_ACCESS_CONTROL=disabled` dans le conteneur jenkins
 
 
 ### Agent SSH
@@ -136,17 +153,6 @@ docker compose ps
 
 ![](./schemas/schema-jenkins-docker.png)
 
-## ajouter l'authentification
-
-* => warning sur l'absence d'authentification
-* règlage de sécurité 
-  + utiliser la base de données d'utilisateur
-  + accès aux fonctionnalités pour les users connectés
-  + save
-* creer le 1er admin user 
-* dashboard menu utilisateur
-  + securité
-  + jeton d'API > 111883a1f836ce749937f0c23d3c858e52
 
 ## jeton d'accès pour check git
 

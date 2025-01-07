@@ -15,7 +15,7 @@ services:
       - ~/jenkins/certs:/var/jenkins_home/certs
     environment:
       # bypass du wizard d'installation
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitStatus.NOTIFY_COMMIT_ACCESS_CONTROL=disabled
       # attention ajoute un vault ou une variable secrète pour password !!!
       - JENKINS_OPTS=--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/keystore.jks --httpsKeyStorePassword=password
     extra_hosts:
