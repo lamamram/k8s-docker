@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   # int = "nom de l'interface réseau connectée au routeur (ip a || ipconfig /all)"
   # ip = "adresse ip disponible sur le sous réseau local (ping pour tester)"
   # cidr = "24 (si masque réseau en 255.255.255.0)"
-  interface = "Intel(R) Ethernet Connection (7) I219-LM #2"
+  int = "Intel(R) Ethernet Connection (7) I219-LM #2"
   range = "192.168.1.3"
   cidr = "24"
 
@@ -18,7 +18,7 @@ Vagrant.configure(2) do |config|
 
   [
     ["formation.lan", "2048", "2", "#{image}", "#{range}0"],
-  ].each do |vmname,mem,cpu,os|
+  ].each do |vmname,mem,cpu,os,ip|
     config.vm.define "#{vmname}" do |machine|
 
       machine.vm.provider "virtualbox" do |v|
