@@ -1,0 +1,32 @@
+---
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+      - "8443:8443"
+    networks:
+      - jenkins-net
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ~/jenkins/certs:/var/jenkins_home/certs
+    environment:
+      # bypass du wizard d'installation
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      # attention ajoute un vault ou une variable secrète pour password !!!
+      - JENKINS_OPTS=--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/keystore.jks --httpsKeyStorePassword=password
+
+volumes:
+  jenkins_home:
+
+networks:
+  jenkins-net:
+    name: jenkins-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1 
