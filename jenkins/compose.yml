@@ -18,6 +18,8 @@ services:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
       # attention ajoute un vault ou une variable secrète pour password !!!
       - JENKINS_OPTS=--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/keystore.jks --httpsKeyStorePassword=password
+    extra_hosts:
+      - "formation.lan:172.20.0.1"
 
 volumes:
   jenkins_home:

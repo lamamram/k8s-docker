@@ -22,7 +22,7 @@ chmod 700 ~/.ssh
 
 ## créer les clés côté client
 
-* `ssh-keygen.exe -t ed25519 -f ~/.ssh/jenkins -N "roottoor"`
+* `ssh-keygen.exe -t ed25519 -f ~/.ssh/jenkins -N ""`
 
 ## placer la clé publique côté serveur
 
@@ -43,12 +43,12 @@ Host jenkins.myusine.fr
  UserKnownHostsFile /dev/null
  StrictHostKeyChecking no
 ```
-3. tester la cnx ssh: `ssh -i ~/.ssh/jenkins git@jenkins.myusine.fr`
+3. tester la cnx ssh: `ssh -i ~/.ssh/jenkins git@formation.lan`
 
 ## configurer le dépôt distant dans le dépôt client
 
-* `git remote add origin git@jenkins.myusine.fr:dev.git`
+* `git remote add origin git@formation.lan:dev.git`
 
 ## pousser les commits sur le dépôt distan en fonction de la branche
 
-* `git push origin main`
+* `git push -u origin main`

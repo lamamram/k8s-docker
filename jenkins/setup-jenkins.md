@@ -61,12 +61,12 @@ docker compose ps
     + Administrer Jenkins
     + sécurité
     + section "Git Host Key Verification Configuration" > **no verification**
-  - espace du projet dev
+  - espace du projet stack-java
   - configurer
   - section pipeline
     + definition => **pipeline from SCM**
     + SCM > git
-    + URL: git@jenkins.myusine.fr:dev.git
+    + URL: git@formation.lan:dev.git (ajouter le extra_hosts dans le compose)
     + créer un **credential** (cf infra)
   - ajouter credential
     + identifiants globaux (illimité)
