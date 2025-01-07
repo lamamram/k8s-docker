@@ -1,5 +1,10 @@
 ---
 
+## 1/ si l'image existe en local => pas de pull, pas de build
+## 2/ si //            pas //    => pull sauf si les couches sont dans le cache, pas de build
+## 3/ sinon en ajoutant docker compose up -d --build => force le build
+## 4/ pas d'image en local , pas de registre (pricé ou public => DOCKER HUB) => build
+
 networks:
   stack-java:
     name: stack-java
@@ -12,7 +17,9 @@ networks:
 services:
   httpd:
     container_name: stack-java-httpd 
-    image: stack-java-httpd:1.0
+    image: formation.lan:443/stack-java-httpd:1.0
+    # build:
+    #   context: ./httpd
     restart: unless-stopped
     networks:
       - stack-java
@@ -23,7 +30,14 @@ services:
 
   tomcat:
     container_name: stack-java-tomcat
-    image: stack-java-tomcat:1.0
+    image: formation.lan:443/stack-java-tomcat:1.0
+    ## on utilise pas le build docker compose dans un orchestrateur (swarm)
+    # build:
+    #   context: ./tomcat
+    #   # no_cache: true
+    #   args:
+    #     - TOMCAT_VERSION_MAJOR=${TOMCAT_VERSION_MAJOR:-9}
+    #     - TOMCAT_VERSION_FULL=${TOMCAT_VERSION_FULL:-9.0.98}
     restart: unless-stopped
     networks:
       - stack-java

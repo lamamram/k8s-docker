@@ -1,7 +1,7 @@
 # multistaging build
 # 1. j'ai besoin de curl pour mon build ou mon healthcheck
 # 2. au lieu de pourir mon image de build avec un apt-get
-# 3. on va uriliser un utilitaire "curl-static" envoyé depuis une autre image
+# 3. on va utiliser un utilitaire "curl-static" envoyé depuis une autre image
 #    => d'une image intermédiaire "sidecar"
 # STAGE
 FROM shakefu/curl-static AS curl
