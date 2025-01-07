@@ -1,26 +1,24 @@
-## Toute commande doit-ere exécution dans le répertoire contenant le Vagrantfile
+## Toute commande doit-ere exécution dans le répertoire contenant le Dockerfile
 # vagrant up
 # vagrant halt
 # vagrant destroy
 # vagrant global-config
 #----------------------
 # vagrant ssh [NAME|ID]
-# access-token: myusine xYph6TpAt1yJ1hJiS3QN
 Vagrant.configure(2) do |config|
-  # interface : réseau à utiliser (ipconfig /all | ip a)
-  # range     : gamme d'ip à utiliser
-  # cidr      : masque de sous réseau
-  interface = "Intel(R) Ethernet Connection (7) I219-V"
+
+  # int = "nom de l'interface réseau connectée au routeur (ip a || ipconfig /all)"
+  # ip = "adresse ip disponible sur le sous réseau local (ping pour tester)"
+  # cidr = "24 (si masque réseau en 255.255.255.0)"
+  interface = "Intel(R) Ethernet Connection (7) I219-LM #2"
   range = "192.168.1.3"
   cidr = "24"
 
-  image = "mlamamra/debian12-plus"
+  image = "ml-registry/jenkins"
 
   [
-    # ["worker1.lan", "1024", "1", "#{image}", "#{range}1"],
-    # ["worker2.lan", "1024", "1", "#{image}", "#{range}2"],
     ["formation.lan", "2048", "2", "#{image}", "#{range}0"],
-  ].each do |vmname,mem,cpu,os,ip|
+  ].each do |vmname,mem,cpu,os|
     config.vm.define "#{vmname}" do |machine|
 
       machine.vm.provider "virtualbox" do |v|
@@ -32,13 +30,11 @@ Vagrant.configure(2) do |config|
       end
       machine.vm.box = "#{os}"
       machine.vm.hostname = "#{vmname}"
-	  machine.vm.network "public_network", bridge: "#{interface}",
+      # machine.vm.network "public_network"
+      machine.vm.network "public_network", bridge: "#{int}",
         ip: "#{ip}",
         netmask: "#{cidr}"
-      machine.ssh.insert_key = false
-      # lancer l'install de docker dès le lancement
-      machine.vm.provision "shell", 
-        path: "install_docker.sh"
+	    machine.ssh.insert_key = false
     end
   end
 end
