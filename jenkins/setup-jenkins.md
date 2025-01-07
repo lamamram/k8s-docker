@@ -45,8 +45,6 @@ docker compose ps
      + pipeline
      + git
      + SSH Build Agent
-     + maven
-     + coverage
 
 ---
 

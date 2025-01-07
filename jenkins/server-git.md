@@ -22,7 +22,7 @@ chmod 700 ~/.ssh
 
 ## créer les clés côté client
 
-* `ssh-keygen.exe -t ecdsa -f ~/.ssh/jenkins -N "roottoor"`
+* `ssh-keygen.exe -t ed25519 -f ~/.ssh/jenkins -N "roottoor"`
 
 ## placer la clé publique côté serveur
 
