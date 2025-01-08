@@ -37,10 +37,7 @@ docker compose ps
   + utiliser la base de données d'utilisateur
   + accès aux fonctionnalités pour les users connectés
   + save
-* creer le 1er admin user 
-* dashboard menu utilisateur
-  + securité
-  + jeton d'API > 111883a1f836ce749937f0c23d3c858e52
+* creer le 1er admin user
 
 ### type de jenkins
 
@@ -65,10 +62,11 @@ docker compose ps
 ### création
 
 * Dashboard
-  - new item => appelé **dev**
+  - new item => appelé **java-stack**
   - type "pipeline"
 
-### configuration du projet
+### configuration du projet avec GIT
+  - [créer un dépôt serveur](./server-git.md) 
   - bypasser la confirmation "known_hosts"
     + Administrer Jenkins
     + sécurité
@@ -89,9 +87,10 @@ docker compose ps
     + id: jenkins-pkey
     + username: **git**
     + contenu: de la clé privée `~/.ssh/jenkins` (côté host)
+    + RAPPEL pour la clé pricée: protocole > ed25519 ou ssh-keygen -b 'xxxx' pour augmenter la taille de la clé rsa / ecdsa / ...
     + la passphrase: **roottoor**
-  - scrutation du dépôt
-    + version naïve: **Polling avec H/4 * * * ***
+  - scrutation automatique du dépôt
+    + version naïve: **Polling avec H/4 * * * \***
     + version avec le git hook **post-receive à la fin du git push côté serveur** (cf infra)
   - gestion du hook
     + administrer Jenkins
@@ -156,9 +155,9 @@ docker compose ps
 
 ## utilisation de la CLI jenkins pour automatisation
 
-* account > sécurité
-* api Token > generate > save
-* Dashboard > administrer Jenkins > jenkins CLI
+* dashboard menu utilisateur
+  + securité
+  + jeton d'API > 119fddeabf44330e5fab0ff369d4bb94ac
 
 ```bash
 ## on the VM

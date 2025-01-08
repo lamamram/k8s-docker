@@ -13,6 +13,11 @@ services:
     volumes:
       - jenkins_home:/var/jenkins_home
       - ~/jenkins/certs:/var/jenkins_home/certs
+      # pour utiliser la CLI de docker: 
+      # fonctionne car l'utilisateur du conteneur jenkins a l'UID 1000 comme l'utilsateur vagrat de la VM
+      - /usr/bin/docker:/usr/bin/docker
+      # WARNING !!! faille de sécurité potentielle
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # bypass du wizard d'installation
       - >
