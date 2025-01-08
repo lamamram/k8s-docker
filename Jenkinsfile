@@ -11,13 +11,14 @@ pipeline {
                     //image 'alpine:latest'
                     image 'docker:27.3.1'
                     // options du docker run
-                    args ' -u root -v /var/run/docker.sock:/var/run/docker.sock'
+                    args ' -u root -v /var/run/docker.sock:/var/run/docker.sock --add-host formation.lan:172.17.0.1'
                 }
             }
             steps {
+                // test
                 sh '''
                 cd stack-java/httpd
-                docker build -t stack-java-httpd:1.0 .
+                docker build -t formation.lan:443/stack-java-httpd:1.0 .
                 docker run --name=test -d stack-java-httpd:1.0
                 sleep 6
                 echo "$(docker ps --filter name=test)" > test
@@ -27,7 +28,19 @@ pipeline {
             //nettoyage
             post {
                 // condition d'exécution du traitements POST step
+                // always never unsuccess
                 success {
+                    // upload de l'image dans le registre
+                    // masquage du mdp du registre avec un credential
+                    withCredentials([
+                        string(credentialsId: 'registry-token', variable: 'REGISTRY_TOKEN')
+                    ]) {
+                        sh '''
+                        docker login -u testuser -p $REGISTRY_TOKEN formation.lan:443/stack-java-httpd:1.0
+                        docker push formation.lan:443/stack-java-httpd:1.0
+                        '''
+                    }
+                    
                     sh '''
                     docker rm -f test
                     '''
