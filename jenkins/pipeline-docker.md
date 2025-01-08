@@ -55,7 +55,7 @@
     post {
         // success: condition d'exécution
         success {
-            // withCredentials: utilisation d'un Credential Jenkins (cf GUI ou jenkins-cli) 
+            // withCredentials: utilisation d'un Credential Jenkins (cf GUI ou jenkins-cli) -> de type secret text
             withCredentials([
                 string(credentialsId: '<credential-id>', variable: 'ENV_VAR')
             ]) {

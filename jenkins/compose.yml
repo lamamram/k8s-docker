@@ -27,8 +27,23 @@ services:
       # attention ajoute un vault ou une variable secrète pour password !!!
       - JENKINS_OPTS=--httpPort=-1 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/keystore.jks --httpsKeyStorePassword=password
       # - JENKINS_OPTS=--httpPort=8080 --httpsPort=8443 --httpsKeyStore=/var/jenkins_home/certs/keystore.jks --httpsKeyStorePassword=password
+      
+      # mode tcp VS mode socket unix
+      # - DOCKER_HOST=tcp://dind:2376
+      # - DOCKER_TLS_VERIFY=1
     extra_hosts:
       - "formation.lan:172.20.0.1"
+  
+  # ALTERNATIVE au partage de la socket unix
+  # en ajoutant le mode ROOTLESS => 27.3.1-dind-rootless 
+  # dind:
+  #   image: docker:27.3.1-dind
+  #   container_name: dind
+  #   ## utilise les caractéristiques du noyau (UNSAFE)
+  #   ## FORCE PORT 2376 => IL FAUT AJOUTER le certificat .pem côté client
+  #   privileged: true
+  #   networks:
+  #     - jenkins-net
 
 volumes:
   jenkins_home:
