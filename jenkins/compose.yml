@@ -10,6 +10,8 @@ services:
       - "8443:8443"
     networks:
       - jenkins-net
+    # utilisation du groupe docker (avec le GID dans le conteneur jenkins)
+    user: jenkins:996
     volumes:
       - jenkins_home:/var/jenkins_home
       - ~/jenkins/certs:/var/jenkins_home/certs
