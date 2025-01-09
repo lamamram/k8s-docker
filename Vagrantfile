@@ -73,7 +73,7 @@ Vagrant.configure(2) do |config|
     end
   end
 
-  # run installation
+  # installation des machines du cluster
   NODES.each do |node|
     config.vm.define node[:hostname] do |machine|
 
