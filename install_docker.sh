@@ -53,12 +53,10 @@ cat <<EOF > /etc/docker/daemon.json
 }
 EOF
 
-systemctl restart docker
-
 # ajout de l'utilisateur vagrant au groupe docker 
 # autorisé à exécuter des commandes docker sans sudo
 usermod -aG docker vagrant
 
-
+systemctl restart docker
 
 
