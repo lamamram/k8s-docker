@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: sample-java
+  name: sample-java
+  namespace: stack-java
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  # association service <=> déploiement
+  selector:
+    app: sample-java

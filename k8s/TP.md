@@ -69,5 +69,59 @@
    * `k apply -n stack-java -f /vagrant/k8s/sample-java-dpl.yml`
    * MIEUX: ajouter le namespace dans le manifeste
 
+   * checker: `k get -n stack-java deployments.apps,pod -o wide`
+
+## cas réél: l'application sample-java
+
+### utiliser les images docker locales dans les noeud
+
+* k8s n'utilise pas nativement le registre local d'images docker, 
+  mais son propre registre via `crictl`
+
+```bash
+# export import docker / export cri (k8s)
+docker save formation.lan:443/stack-java-httpd:1.0 -o httpd.tar
+sudo ctr -n=k8s.io images import httpd.tar
+sudo crictl images | grep httpd
+```
+
+### mieux: connecter le déploiement au registre à la volée via un Secret
+
+```bash
+k create secret generic regcred \
+  --from-file=.dockerconfigjson=/home/vagrant/.docker/config.json \
+  --type=kubernetes.io/dockerconfigjson \
+  --dry-run=client -o yaml > /vagrant/k8s/registry-secret.yml
+```
+* REM: le fichier `/home/vagrant/.docker/config.json` contient un secret encodé en base64 => pas CHIFFRE
+  => utiliser le `credStore` Docker
+* REM2: le secret en yml est encodé en base64 => pas CHIFFRE
+  => utiliser les ressources Encryption (etcd, api ...)
+
+* REM3: configurer un accès insecure au registre dans k8S
+  + exécuter le script `/home/k8s/insecure_containerd_config.sh`
+  + dans les noeuds
+
+### mise en réseau
+
+* exposition au sens k8s != au sens docker
+
+* ajouter un **service** à un déploiement
+
+```bash
+k expose -n stack-java deployment sample-java \
+--port 80 \
+--target-port 8080 \
+--dry-run=client -o yaml > /vagrant/k8s/sample-java-svc.yml
+```
+
+* test: `k exec -n stack-java busy -- wget -O - http://sample-java`
+
+
+* test (FQDN from outside): `k exec busy -- nslookup sample-java.stack-java.svc.cluster.local`
+
+
+
+
 
 
