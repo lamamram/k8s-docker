@@ -9,8 +9,14 @@ prepare_kubespray(){
 
     echo
     echo "## 2. Install requirements"
+    ## installation python d'ansible
+    ## ajout d'un environnement virtuel:
+    #   - dossier qui centralise les binaires (python3, pip3) et les dépendances
+    #   - création du dossier venv
+    #   - activation du venv: redirection du terminal sur les binaires (détournement du PATH)
     python3 -m venv venv
     source ./venv/bin/activate
+    # installtion des paquets python nécéssaires à ansible dans le venv
     pip3 install --quiet -r kubespray/requirements.txt
 
     echo
@@ -58,6 +64,19 @@ create_ssh_for_kubespray(){
 run_kubespray(){
     echo
     echo "## 7. ANSIBLE | Run kubepsray"
+    ## EXPLICATIONS
+    # 1/ sudo su - vagrant: permet de s'assurer que la commande ansible va être lancée par l'utilisateur vagrant du contrôleur
+    # 2/ bash -c: quand on arrive dans le compte vagrant on invoque un bash, pour être sûr d'être dans un bash
+    # 3/ source .../activate: nouveau bash donc il faut réactiver le venv sinon le bash ne voit pas les paquets ansible !!!
+    # 4/ cd kubespray: pour activer la configuration ansible.cfg
+    #    - algorithme de découverte de ansible.cfg: ./ansible.cfg,~/.config/ansible.cfg
+    #    - algorithme de découverte des rôles sans ansible.cfg: ./playbooks/roles : FALSE !!!
+    #    - avec ansible.cfg: les rôles sont à la racine de kubespray
+    # 5/ ansible-playbook [] cluster.yml : lancement du playbook central
+    #    - i ... : on demande explicitement l'inventaire à cause du ansible.cfg (.ini ignored)
+    #    - b: BECOME: je demande un augmentation de privilège: pour les tâches qui nécessitent le SUDO
+    #      + cas simple car on a un compte vagrant avec sudo sans mdp => sinon -e "ansible_become_pass=$ANSIBLE_SUDO_PASS"
+    #    - -u vagrant: compte vagrant sur les cibles (cluster) 
     sudo su - vagrant bash -c "source ./venv/bin/activate;cd kubespray;ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory/mycluster/inventory.ini -b -u vagrant cluster.yml"
 }
 
@@ -70,11 +89,13 @@ install_kubectl(){
     echo "deb [signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$KUBE_CTL_VERSION/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
     apt-get update -qq 2>&1 >/dev/null
     apt-get install -qq -y kubectl 2>&1 >/dev/null
+    
+    ## installation du context k8s: ensemble des informations pour connecter le cluster
     mkdir -p /home/vagrant/.kube
     chown -R vagrant /home/vagrant/.kube
     
     echo
-    echo "## 9. KUBECTL | copy cert"
+    echo "## 9. KUBECTL | copy context with cert"
     ssh -o StrictHostKeyChecking=no -i /home/vagrant/.ssh/id_rsa vagrant@${IP_CPANE} "sudo cat /etc/kubernetes/admin.conf" >/home/vagrant/.kube/config
 }
 

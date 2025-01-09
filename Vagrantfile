@@ -22,11 +22,11 @@ Vagrant.configure(2) do |config|
 
   # paquets et configuration pour les 4 machines
   common = <<-SHELL
-  sudo apt update -qq 2>&1 >/dev/null
-  sudo apt install -y -qq git vim tree net-tools telnet git python3-pip python3-venv sshpass 2>&1 >/dev/null
-  sudo echo "autocmd filetype yaml setlocal ai ts=2 sw=2 et" > /home/vagrant/.vimrc
+  apt update -qq 2>&1 >/dev/null
+  apt install -y -qq git vim tree net-tools telnet git python3-pip python3-venv sshpass 2>&1 >/dev/null
+  echo "autocmd filetype yaml setlocal ai ts=2 sw=2 et" > /home/vagrant/.vimrc
   sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
-  sudo systemctl restart sshd
+  systemctl restart sshd
   SHELL
 
   # prérequis RAM > 1.6 GO, CPU >= 1
@@ -43,35 +43,6 @@ Vagrant.configure(2) do |config|
   etcHosts += "echo '" + "#{range}1" + " " + "formation.lan" + " autoelb.lan' >> /etc/hosts" + "\n"
 
   ## MAIN
-
-  # CONTROLLER
-  [
-    ["formation.lan", "#{range}1", "2048", "2"],
-  ].each do |hostname,ip,mem,cpus|
-    
-    config.vm.define "#{hostname}" do |machine|
-
-      machine.vm.provider "virtualbox" do |v|
-        v.name = "#{hostname}"
-        v.memory = "#{mem}"
-        v.cpus = "#{cpus}"
-        v.customize ["modifyvm", :id, "--ioapic", "on"]
-        v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-      end
-      machine.vm.hostname = "#{hostname}"
-      machine.vm.box = "#{image_ctrl}"
-      # machine.vm.network "public_network"
-      machine.vm.network "public_network", bridge: "#{int}",
-        ip: "#{ip}",
-        netmask: "#{cidr}"
-        machine.ssh.insert_key = false
-      ## provisioners
-      machine.vm.provision "shell", inline: etcHosts
-      machine.vm.provision "shell", inline: common
-      machine.vm.provision "install-kubespray",
-        type: "shell", path: "install_k8s.sh"
-    end
-  end
 
   # installation des machines du cluster
   NODES.each do |node|
@@ -96,6 +67,37 @@ Vagrant.configure(2) do |config|
       machine.vm.provision "shell", inline: etcHosts
       machine.vm.provision "shell", inline: common
       machine.vm.provision "shell", path: "install_docker.sh"
+    end
+  end
+
+  # CONTROLLER
+  [
+    ["formation.lan", "#{range}1", "2048", "2"],
+  ].each do |hostname,ip,mem,cpus|
+    
+    config.vm.define "#{hostname}" do |machine|
+
+      machine.vm.provider "virtualbox" do |v|
+        v.name = "#{hostname}"
+        v.memory = "#{mem}"
+        v.cpus = "#{cpus}"
+        v.customize ["modifyvm", :id, "--ioapic", "on"]
+        v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      end
+      machine.vm.hostname = "#{hostname}"
+      machine.vm.box = "#{image_ctrl}"
+      # machine.vm.network "public_network"
+      machine.vm.network "public_network", bridge: "#{int}",
+        ip: "#{ip}",
+        netmask: "#{cidr}"
+        machine.ssh.insert_key = false
+      ## provisioners: pour exécuter uniquement les script
+      # vagrant provision formation.lan
+      # vagrant provision --provision-with install-kubespray formation.lan 
+      machine.vm.provision "shell", inline: etcHosts
+      machine.vm.provision "shell", inline: common
+      machine.vm.provision "install-kubespray",
+        type: "shell", path: "install_k8s.sh"
     end
   end
 end
