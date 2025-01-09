@@ -20,6 +20,11 @@
 
 1. Manifeste
 
+   * dry-run(s)
+     + **client**: command not run && apiserver not validated
+     + **server**: command not run && apiserver validated (error possible)
+     + **none**: command run && apiserver validated but output
+
    * générer un manifester (YAML) `k run busy --image busybox --dry-run=client -o yaml > /vagrant/k8s/busy.yml`
    * retravailler/renommer le manifeste 
    * et ensuite appliquer depuis le manifeste `k apply -f /vagrant/k8s/busy-dual.yml`
@@ -44,4 +49,25 @@
    k exec -it busy-dual -c web -- /bin/sh
    # cat /mnt/fic
    ```
+
+## Deploiement: Deployment
+
+1. génération
+
+   ```bash
+   k create deployment sample-java \
+     --image formation.lan:443/stack-java-httpd:1.0 \
+     --image formation.lan:443/stack-java-tomcat:1.0 \
+     --dry-run=client -o yaml > /vagrant/k8s/sample-java-dpl.yml
+   ```
+
+2. création du namespace (partition "hermitique" du cluster k8s )
+
+   * `k create ns stack-java --dry-run=client -o yaml > /vagrant/k8s/stack-java-ns.yml`
+
+3. application du déploiement dans le namespace "stack-java"
+   * `k apply -n stack-java -f /vagrant/k8s/sample-java-dpl.yml`
+   * MIEUX: ajouter le namespace dans le manifeste
+
+
 

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+# méta du dpl
+metadata:
+  namespace: stack-java
+  labels:
+    app: sample-java
+  name: sample-java
+# contenu du dpl
+spec:
+  # le nb de pods repliqués
+  replicas: 2
+  # CONDITION D'ASSOCIATION ENTRE DPL <=> POD
+  selector:
+    # association via les labels app=sample-java dans le dpl et le pod
+    matchLabels:
+      app: sample-java
+  # stratégie de MAJ => "Roling Update" par défaut
+  strategy: {}
+  # desciption du pod associé au dpl
+  template:
+    metadata:
+      labels:
+        app: sample-java
+    # descritpion du contenu du pod associé au dpl
+    spec:
+      containers:
+      - image: formation.lan:443/stack-java-httpd:1.0
+        name: stack-java-httpd
+      - image: formation.lan:443/stack-java-tomcat:1.0
+        name: stack-java-tomcat

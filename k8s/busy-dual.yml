@@ -24,7 +24,7 @@ spec:
       - name: mnt
         mountPath: /mnt
   volumes:
-    # nom du volume/dossier (emptyDir)
+    # nom du volume
     - name: mnt
       # créer un dossier commun dans les conteneurs du pod
       emptyDir:
