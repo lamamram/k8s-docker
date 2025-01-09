@@ -1,0 +1,32 @@
+# version v1 pour les ressources de base
+apiVersion: v1
+# type de ressource
+kind: Pod
+# métadonnées de la ressource (pod)
+metadata:
+  # labels des méta : très important pour filtrer et/ou associer des ressources
+  labels:
+    run: busy
+  # nom du pod
+  name: busy-dual
+# contenu de la ressource
+spec:
+  containers:
+  - image: busybox
+    name: busy
+    command: ["sleep", "infinity"]
+    volumeMounts:
+      - name: mnt
+        mountPath: /mnt
+  - image: nginx
+    name: web
+    volumeMounts:
+      - name: mnt
+        mountPath: /mnt
+  volumes:
+    # nom du volume/dossier (emptyDir)
+    - name: mnt
+      # créer un dossier commun dans les conteneurs du pod
+      emptyDir:
+    
+  restartPolicy: Always
