@@ -98,6 +98,8 @@ Vagrant.configure(2) do |config|
       machine.vm.provision "shell", inline: common
       machine.vm.provision "install-kubespray",
         type: "shell", path: "install_k8s.sh"
+      machine.vm.provision "kubectl_auto",
+        type: "shell", path: "kubectl_auto.sh", privileged: false
     end
   end
 end
