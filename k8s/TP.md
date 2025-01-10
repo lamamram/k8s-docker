@@ -192,6 +192,17 @@ kubectl get ipaddresspools -n metallb-system
   + `k apply -f /vagrant/k8s/ipaddresspool-metallb.yml`
 
 
+## gestion centralisée d'une application dans k8S
+
+* TIP: `k delete -n stack-java all --all`
+
+* utilisation d'un manifeste **kustomization.yml**
+  + centralisant les ressources de l'application
+  + lancement `k apply -k .` dans l'emplacement du manifeste
+  + test: `k kustomize`
+  + désinstaller: `k delete -k .`
+
+
 
 
 

@@ -84,12 +84,9 @@ pipeline {
                 // test: kubectl cluster-info
                 sh '''
                 cp /var/jenkins_home/config /.kube/config
-                cd k8s
+                cd k8s 
                 kubectl apply -f stack-java-ns.yml 
-                kubectl apply -f registry-secret.yml
-                kubectl apply -f sample-java-dpl.yml
-                sleep 3
-                kubectl apply -f sample-java-svc.yml
+                kubectl apply -k .
                 '''
             }
         }

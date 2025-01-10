@@ -68,3 +68,39 @@
   ```
 
 
+## job deployment kuberetes
+
+### préparation de l'agent docker kubectl
+
+1. image : bitnami/kubectl:1.30
+   * jenkins accroche automatiquement les volumes du conteneur jenkins
+     + en particulier sa home `/var/jenkins_home`
+     + on partage la config du cluster dans la debiian `~/.kube/config` dans `/var/jenkins_home/config`
+   * `-u root`  : exécution en root car pas d'utilisateur 1000
+   * `--add-host autoelb.lan=192.168.1.30` : accès au cluster (pas de service dns)
+   * `--entrypoint=""`: désactiver l'instruction ENTRYPOINT de l'image de base qui fait interférence avec jenkins
+   * BONUS: configurer l'ip 192.168.1.30 
+     + dans un variable d'environnement du conteneur jenknis, via le docker compose
+     + créer un script groovy qui charge cette variable dans le pipeline
+     + excuter le script dans la section `node { } ou agent { }
+`
+2. conditions d'exécution du job 
+
+  * exécuter ce job avec un tag git
+    + jenkins > projet > configure > ajouter un **Branch Specifier**: `*/tags/*`
+  
+  * ajout des condition dans le pipeline
+    + condition exécutées avant l'ajout de l'agent docker
+    + condition exécutées avant le mode manuel
+  ```groovy
+  when {
+    breforeAgent true
+    beforeInput true
+    expression { ??? }
+  }
+  input {
+      message "deploy this tag ?"
+      submitter "admin"
+  }
+  ```
+  
