@@ -133,10 +133,14 @@ k create secret generic regcred \
   + `k rollout -n stack-java undo deployment/sample-java --to-revision 1`
   + documenter le rollback a posteriori: `k annotate -n stack-java deployments.apps sample-java kubernetes.io/change-cause="rollback to 1.0" --overwrite`
   
+3. mécanique de la **rolling update**
+
+![ici](./schema.png)    
 
 ### mise en réseau
 
-* exposition au sens k8s != au sens docker
+* exposition au sens k8s != exposition au sens docker
+* exposition au sens k8s == **publication** au sens docker
 
 * ajouter un **service** à un déploiement
 
@@ -147,10 +151,46 @@ k expose -n stack-java deployment sample-java \
 --dry-run=client -o yaml > /vagrant/k8s/sample-java-svc.yml
 ```
 
+### par défaut: on a un **ClusterIP**: 
+  + une IP dispo dans le cluster
+  + un port
+  + un dns qui est le `metadata.name` accessible dans le namespace
+  + un Fully Qualified Domain Name: accessible dans la totalité du cluster => il faudra ajouter des **NetPolicies**
+  + ce service ne permet pas d'entrer le flux externe => communication inter-pod
+
 * test: `k exec -n stack-java busy -- wget -O - http://sample-java`
 
 
-* test (FQDN from outside): `k exec busy -- nslookup sample-java.stack-java.svc.cluster.local`
+* test (FQDN from outside namespace): `k exec busy-dflt -- wget -O - http://sample-java.stack-java.svc.cluster.local`
+  => A PRIORI communication inter namespace
+
+#### le NodePort: 
+
+* rediriger le port du clusterIP sur un port sur tous les noeuds worker, sur toutes les interfaces (privées / publiques) par défaut
+
+#### on ajoute un LB: load balancer
+
+* utilisation du manifest du LB MetalLB
+
+[ici](https://github.com/metallb/metallb)
+
+* installation: `kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml`
+
+* checks:
+
+```bash
+## vérif des pods (1 par noeud)
+kubectl get pod -n metallb-system
+## vérif de la ressource ipadresspoll (pour les ips externes uniques de nos déploiements)
+k get customresourcedefinition.apiextensions.k8s.io/ipaddresspools.metallb.io -n metallb-system
+## pas de  pool par défaut
+kubectl get ipaddresspools -n metallb-system
+```
+
+* configuration de la pool d'ip en mode couche 2 (L2)
+
+  + `k apply -f /vagrant/k8s/ipaddresspool-metallb.yml`
+
 
 
 

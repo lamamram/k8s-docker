@@ -7,9 +7,13 @@ metadata:
   namespace: stack-java
 spec:
   ports:
+    # port du service = container (processus): qui redirige un flux
   - port: 80
     protocol: TCP
-    targetPort: 8080
+    # port du pod
+    targetPort: http
   # association service <=> déploiement
   selector:
     app: sample-java
+  # type: NodePort
+  type: LoadBalancer
