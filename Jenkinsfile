@@ -4,7 +4,7 @@ pipeline {
 
     stages {
         stage('Build Docker') {
-            // deactivate job !!
+            //deactivate job !!
             when {
                 beforeAgent true
                 expression { false }
@@ -21,12 +21,15 @@ pipeline {
                     // args ' -u root --net jenkins-net -e DOCKER_HOST=tcp://dind:2376 --add-host formation.lan:172.20.0.1'
                 }
             }
+            environment {
+                IMG_TAG = "v1.2"
+            }
             steps {
                 // test
                 sh '''
                 cd stack-java/httpd
-                docker build -t formation.lan:443/stack-java-httpd:1.0 .
-                docker run --name=test -d formation.lan:443/stack-java-httpd:1.0
+                docker build --build-arg TOMCAT_VERSION_FULL=9.0.98 -t formation.lan:443/stack-java-tomcat:$IMG_TAG .
+                docker run --name=test -d formation.lan:443/stack-java-tomcat:$IMG_TAG
                 sleep 6
                 echo "$(docker ps --filter name=test)" > test
                 grep "(healthy)" test
@@ -43,8 +46,8 @@ pipeline {
                         string(credentialsId: 'registry-token', variable: 'REGISTRY_TOKEN')
                     ]) {
                         sh '''
-                        docker login -u testuser -p $REGISTRY_TOKEN formation.lan:443/stack-java-httpd:1.0
-                        docker push formation.lan:443/stack-java-httpd:1.0
+                        docker login -u testuser -p $REGISTRY_TOKEN formation.lan:443
+                        docker push formation.lan:443/stack-java-tomcat:$IMG_TAG
                         '''
                     }
                     
@@ -55,6 +58,15 @@ pipeline {
             }
         }
         stage('Deploy app') {
+            when {
+                beforeAgent true
+                beforeInput true
+                expression { true }
+            }
+            input {
+                message "deploy this tag ?"
+                submitter "admin"
+            }
             // node {
             //     ajouter CLUSTER_ADDR dans un fichier groovy
             //     exécuter le groovy pour charger la variable
@@ -73,8 +85,11 @@ pipeline {
                 sh '''
                 cp /var/jenkins_home/config /.kube/config
                 cd k8s
+                kubectl apply -f stack-java-ns.yml 
                 kubectl apply -f registry-secret.yml
                 kubectl apply -f sample-java-dpl.yml
+                sleep 3
+                kubectl apply -f sample-java-svc.yml
                 '''
             }
         }
