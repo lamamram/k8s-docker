@@ -6,6 +6,7 @@ pipeline {
         stage('Build Docker') {
             // deactivate job !!
             when {
+                beforeAgent true
                 expression { false }
             }
             agent {
@@ -64,12 +65,16 @@ pipeline {
                 docker {
                     image 'bitnami/kubectl:1.30'
                     // args ' -u root -v /var/jenkins_home/config:/.kube/config --add-host autoelb.lan:${env.CLUSTER_ADDR}'
-                    args ' -u root -v /var/jenkins_home/config:/.kube/config --add-host autoelb.lan:192.168.1.32'
+                    args ' -u root --add-host autoelb.lan:192.168.1.32 --entrypoint=""'
                 }
             }
             steps {
+                // test: kubectl cluster-info
                 sh '''
-                kubectl cluster-info
+                cp /var/jenkins_home/config /.kube/config
+                cd k8s
+                kubectl apply -f registry-secret.yml
+                kubectl apply -f sample-java-dpl.yml
                 '''
             }
         }
