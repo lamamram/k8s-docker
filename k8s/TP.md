@@ -85,6 +85,9 @@ sudo ctr -n=k8s.io images import httpd.tar
 sudo crictl images | grep httpd
 ```
 
+* adminstration de crictl comme docker: 
+  + Ex: `sudo crictl rmi $(sudo crictl images -f dangling=true -q)`
+
 ### mieux: connecter le déploiement au registre à la volée via un Secret
 
 ```bash
@@ -93,14 +96,43 @@ k create secret generic regcred \
   --type=kubernetes.io/dockerconfigjson \
   --dry-run=client -o yaml > /vagrant/k8s/registry-secret.yml
 ```
+
+* test: `k get secret -n stack-java regcred -o="jsonpath={.data.\.dockerconfigjson}" | base64 --decode`
+
 * REM: le fichier `/home/vagrant/.docker/config.json` contient un secret encodé en base64 => pas CHIFFRE
-  => utiliser le `credStore` Docker
+  => utiliser le `credsStore` Docker
 * REM2: le secret en yml est encodé en base64 => pas CHIFFRE
   => utiliser les ressources Encryption (etcd, api ...)
 
 * REM3: configurer un accès insecure au registre dans k8S
   + exécuter le script `/home/k8s/insecure_containerd_config.sh`
   + dans les noeuds
+
+### mise à jour du déploiement
+
+1. mettre en échelle manuelle : 
+
+* `k scale -n stack-java deployment sample-java --replicas 3`
+  => pas immutable ET pas de révision (historique des travaux)
+
+* `k edit -n stack-java deployments.apps sample-java`
+  => modif directe de la config de la ressource dans etcd
+  => procédure d'urgence
+  => sans filet !!
+  => pas de révision
+
+* MIEUX : `k apply -f ...` : écraser l'état (IMMUTABLE)
+
+2. mise à jour de l'image : 
+
+* `k set image -n stack-java deployment/sample-java stack-java-tomcat=formation.lan:443/stack-java-tomcat:1.1`
+  + => trace de changement mais pas d'explication: `k rollout -n stack-java history deployment sample-java`
+
+* MIEUX: IAC `k apply -f ...` + ajout `metada.annotations.kubernetes.io/change-cause`
+  + `k rollout history` => voit la description du changement
+  + `k rollout -n stack-java undo deployment/sample-java --to-revision 1`
+  + documenter le rollback a posteriori: `k annotate -n stack-java deployments.apps sample-java kubernetes.io/change-cause="rollback to 1.0" --overwrite`
+  
 
 ### mise en réseau
 
