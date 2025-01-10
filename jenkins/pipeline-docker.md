@@ -103,4 +103,37 @@
       submitter "admin"
   }
   ```
-  
+
+### Améliorations
+
+* ajouter un **job trivy** => scan de vulnérabilité en analysant les images buildées depuis le registre
+  + exporter le rapport de vulnérabilité dans un plugin jenkins
+  + dans une section `post {  }`
+
+* faire fonctionner l'exécution d'un stage conditionné par le build d'un tag et non une branche
+
+* itérer le build d'images pour toutes les images de votre app
+  + piste: utiliser un pipeline scripté != déclaratif
+  + et ajouter le multithreading
+  ```groovy
+  stage {
+    script {
+      allModules.each() {
+         echo it
+      }
+    }
+  }
+  ...
+  stage {
+    parallel {
+      stage { }
+      stage { }
+    }
+  }
+  ```
+
+* injecter des variables d'environnemnts du hôte dans le pipeline
+
+* utilisation de Helm pour installer Prometheus / grafana dans le cluster
+   + Helm le gestionnaire de paquet de k8s
+   + monitorer vos pods

@@ -66,6 +66,7 @@ Vagrant.configure(2) do |config|
       # for all
       machine.vm.provision "shell", inline: etcHosts
       machine.vm.provision "shell", inline: common
+      # pour que k8s puisse utiliser containerd
       machine.vm.provision "shell", path: "install_docker.sh"
     end
   end
