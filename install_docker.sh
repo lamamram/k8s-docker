@@ -16,7 +16,7 @@ fi
 # CODENAME=$(cat /etc/os-release | awk -F '=' '$1 == "VERSION_CODENAME" { print $2 }')
 
 # génération du cachec apt
-apt-get update -q
+apt-get update -qq
 
 # install des prérequis (-y confirme, -q diminue l'affichage en console)
 apt-get install -yq \
@@ -38,7 +38,7 @@ echo \
   $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
 
 # regénénrer le cache apt pour tenir compte du nouveau dépôt
-apt-get update -q
+apt-get update -qq
 
 # install des paquets docker
 apt-get install -yq \
@@ -49,7 +49,7 @@ apt-get install -yq \
 
 cat <<EOF > /etc/docker/daemon.json
 {
-  "insecure-registries": ["127.0.0.1:443","formation.lan:443"]
+  "insecure-registries": ["127.0.0.1:443","$(hostname -A | xargs):443"]
 }
 EOF
 
@@ -57,6 +57,5 @@ EOF
 # autorisé à exécuter des commandes docker sans sudo
 usermod -aG docker vagrant
 
-systemctl restart docker
 
 

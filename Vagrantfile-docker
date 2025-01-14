@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   # interface : réseau à utiliser (ipconfig /all | ip a)
   # range     : gamme d'ip à utiliser
   # cidr      : masque de sous réseau
-  interface = "Intel(R) Ethernet Connection (7) I219-V"
+  interface = "Intel(R) Ethernet Connection (7) I219-LM #2"
   range = "192.168.1.3"
   cidr = "24"
 

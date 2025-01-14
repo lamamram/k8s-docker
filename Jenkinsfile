@@ -76,8 +76,8 @@ pipeline {
             agent {
                 docker {
                     image 'bitnami/kubectl:1.30'
-                    // args ' -u root -v /var/jenkins_home/config:/.kube/config --add-host autoelb.lan:${env.CLUSTER_ADDR}'
-                    args ' -u root --add-host autoelb.lan:192.168.1.32 --entrypoint=""'
+                    // args ' -u root -v /var/jenkins_home/config:/.kube/config --add-host autoks.lan:${env.CLUSTER_ADDR}'
+                    args ' -u root --add-host autoks.lan:192.168.1.32 --entrypoint=""'
                 }
             }
             steps {

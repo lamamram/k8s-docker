@@ -3,7 +3,7 @@ FROM debian:12-slim
 LABEL author="matt"
 LABEL created_at="2025-01-07"
 LABEL stack="java"
-LABEL stack.version="1.0"
+LABEL stack.version="1.1"
 
 # REMARQUE: ces variables d'environnement ne peuvent pas être modifiées 
 #          : qu'au moment du docker run --env HOME 
@@ -31,6 +31,7 @@ WORKDIR ${HOME}
 
 USER tomcat
 
+## utilisable avec le docker run --volumes-from <ctn>
 VOLUME [ "/opt/tomcat/webapps" ]
 
 EXPOSE 8080

@@ -56,30 +56,38 @@ curl -kX GET \
 # see tags of an image
 curl -kX GET \
      -u "testuser:password" \
-     https://formation.lan:443/v2/multiplat/tags/list
+     https://formation.lan:443/v2/<image-name>/tags/list
 
 # see digests conten of a tag
 curl -kX GET \
      -u "testuser:password" \
-     https://formation.lan:443/v2/multiplat/manifests/latest
+     https://formation.lan:443/v2/<image-name>/manifests/<tag-name>
 
-# see digests directly + header accept v2 => response headers (--I) (-s silent) (-k : disable tls)
+# display digests directly + header accept v2 => response headers (--I) (-s silent) (-k : disable tls)
 curl -skIX GET \
      -u "testuser:password" \
      -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-     https://formation.lan:443/v2/multiplat/manifests/latest | awk '/^Docker-Content-Digest/ {print $2}'
+     https://formation.lan:443/v2/<image-name>/manifests/<tag-name> | awk '/^Docker-Content-Digest/ {print $2}'
+
+OU
+
+curl -skIX GET \
+     -u "testuser:password" \
+     -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+     https://formation.lan:443/v2/<image-name>/manifests/<tag-name> | awk '/^docker-content-digest/ {print $2}'
+
 
 # IDEM pour multi-platform build
 curl -skIX GET \
      -u "testuser:password" \
      -H "Accept: application/vnd.oci.image.manifest.v1+json" \
      -H "Accept: application/vnd.oci.image.index.v1+json" \
-     https://formation.lan:443/v2/multiplat/manifests/latest | awk '/^docker-content-digest/ {print $2}'
+     https://formation.lan:443/v2/<image-name>/manifests/<tag-name> | awk '/^docker-content-digest/ {print $2}'
 
 # soft delete tag
 curl -kX DELETE \
      -u "testuser:password" \
-     https://formation.lan:443/v2/multiplat/manifests/<v2_digest>
+     https://formation.lan:443/v2/<image-name>/manifests/<v2_digest>
 
 # hard delete
 docker compose exec registry bin/registry garbage-collect /etc/docker/registry/config.yml 
