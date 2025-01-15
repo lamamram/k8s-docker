@@ -23,21 +23,21 @@ volumes:
     driver_opts:
       type: nfs
       # nomenclature NFS
-      o: addr=formation.lan,ro
+      o: addr=jenkins.lan,ro
       device: :/mnt/nfs-dir/initdb.d
   nfs-vol-php:
     name: nfs-vol-php
     driver: local
     driver_opts:
       type: nfs
-      o: addr=formation.lan,ro
+      o: addr=jenkins.lan,ro
       device: :/mnt/nfs-dir/app
   nfs-vol-nginx:
     name: nfs-vol-nginx
     driver: local
     driver_opts:
       type: nfs
-      o: addr=formation.lan,ro
+      o: addr=jenkins.lan,ro
       device: :/mnt/nfs-dir/nginx-conf.d
 
 

@@ -28,10 +28,10 @@ spec:
     # descritpion du contenu du pod associé au dpl
     spec:
       containers:
-      # - image: formation.lan:443/stack-java-httpd:1.0
+      # - image: jenkins.lan:443/stack-java-httpd:1.0
       #   name: stack-java-httpd
       #   imagePullPolicy: Always
-      - image: formation.lan:443/stack-java-tomcat:1.1
+      - image: jenkins.lan:443/stack-java-tomcat:1.1
         name: stack-java-tomcat
         # exposition au sens docker
         ports:

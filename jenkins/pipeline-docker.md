@@ -25,7 +25,7 @@
         //image '<img>:<tag>'
         image 'docker:27.3.1'
         // options du docker run
-        args ' -u root -v /var/run/docker.sock:/var/run/docker.sock --add-host formation.lan:172.17.0.1'
+        args ' -u root -v /var/run/docker.sock:/var/run/docker.sock --add-host jenkins.lan:172.17.0.1'
         // -u root: il n'y a pas de UID 1000 dans ce conteneur
         // -v ... : pour connecter le daemon docker de la VM (UNSAFE)
         // --add-host: pour connaître l'ip du host du registre

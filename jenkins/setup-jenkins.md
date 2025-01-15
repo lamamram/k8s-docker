@@ -79,7 +79,7 @@ docker compose ps
   - section pipeline
     + definition => **pipeline from SCM**
     + SCM > git
-    + URL: git@formation.lan:dev.git (ajouter le extra_hosts dans le compose)
+    + URL: git@jenkins.lan:dev.git (ajouter le extra_hosts dans le compose)
     + créer un **credential** (cf infra)
   - ajouter credential
     + identifiants globaux (illimité)
@@ -162,12 +162,12 @@ docker compose ps
 ```bash
 ## on the VM
 cd ~/jenkins
-curl -k -u admin:roottoor https://formation.lan:8443/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
+curl -k -u admin:roottoor https://jenkins.lan:8443/jnlpJars/jenkins-cli.jar -o jenkins-cli.jar
 
 ## environment variables to manage calls
-# export JENKINS_URL=https://formation.lan:8443/
+# export JENKINS_URL=https://jenkins.lan:8443/
 # issue with autosigned cert donc => httpPort in compose &
-export JENKINS_URL=http://formation.lan:8080/
+export JENKINS_URL=http://jenkins.lan:8080/
 export JENKINS_USER_ID=admin
 export JENKINS_API_TOKEN=119fddeabf44330e5fab0ff369d4bb94ac
 

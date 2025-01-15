@@ -115,6 +115,7 @@ install_kubectl(){
         echo
         echo "## 9. KUBECTL | copy context with cert"
         ssh -o StrictHostKeyChecking=no -i "$HOME/.ssh/id_rsa" "$USER@${IP_CPANE}" "sudo cat /etc/kubernetes/admin.conf" > "$HOME/.kube/config"
+        chmod 600 "$HOME/.kube/config"
     fi
 }
 

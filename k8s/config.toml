@@ -164,9 +164,9 @@ version = 2
 
       [plugins."io.containerd.grpc.v1.cri".registry.configs]
 
-        [plugins."io.containerd.grpc.v1.cri".registry.configs."formation.lan:443"] # edited line
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."jenkins.lan:443"] # edited line
 
-          [plugins."io.containerd.grpc.v1.cri".registry.configs."formation.lan:443".tls] # edited line  
+          [plugins."io.containerd.grpc.v1.cri".registry.configs."jenkins.lan:443".tls] # edited line  
             ca_file = "" # edited line
             cert_file = "" # edited line
             insecure_skip_verify = true # edited line
@@ -176,8 +176,8 @@ version = 2
 
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
 
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."formation.lan:443"] # edited line
-          endpoint = ["https://formation.lan:443"] # edited line
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."jenkins.lan:443"] # edited line
+          endpoint = ["https://jenkins.lan:443"] # edited line
 
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""

@@ -19,4 +19,4 @@ sudo systemctl enable mailhog
 sudo systemctl start mailhog
 
 ## pour utiliser: SMTP sur le port 1025
-## //   vister: http://formation.lan:8025
+## //   vister: http://jenkins.lan:8025

@@ -1,1 +1,1 @@
-curl -u admin:roottoor -s -k -X POST https://formation.lan:8443/git/notifyCommit?url=git@formation.lan:dev.git&token=1b7896b52339f7403176435e786f113c
+curl -u admin:roottoor -s -k -X POST https://jenkins.lan:8443/git/notifyCommit?url=git@jenkins.lan:dev.git&token=1b7896b52339f7403176435e786f113c

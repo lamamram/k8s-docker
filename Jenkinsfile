@@ -16,9 +16,9 @@ pipeline {
                     //image 'alpine:latest'
                     image 'docker:27.3.1'
                     // options du docker run
-                    args ' -u root -v /var/run/docker.sock:/var/run/docker.sock --add-host formation.lan:172.17.0.1'
+                    args ' -u root -v /var/run/docker.sock:/var/run/docker.sock --add-host jenkins.lan:172.17.0.1'
                     // avec un serveur dind
-                    // args ' -u root --net jenkins-net -e DOCKER_HOST=tcp://dind:2376 --add-host formation.lan:172.20.0.1'
+                    // args ' -u root --net jenkins-net -e DOCKER_HOST=tcp://dind:2376 --add-host jenkins.lan:172.20.0.1'
                 }
             }
             environment {
@@ -28,8 +28,8 @@ pipeline {
                 // test
                 sh '''
                 cd stack-java/httpd
-                docker build --build-arg TOMCAT_VERSION_FULL=9.0.98 -t formation.lan:443/stack-java-tomcat:$IMG_TAG .
-                docker run --name=test -d formation.lan:443/stack-java-tomcat:$IMG_TAG
+                docker build --build-arg TOMCAT_VERSION_FULL=9.0.98 -t jenkins.lan:443/stack-java-tomcat:$IMG_TAG .
+                docker run --name=test -d jenkins.lan:443/stack-java-tomcat:$IMG_TAG
                 sleep 6
                 echo "$(docker ps --filter name=test)" > test
                 grep "(healthy)" test
@@ -46,8 +46,8 @@ pipeline {
                         string(credentialsId: 'registry-token', variable: 'REGISTRY_TOKEN')
                     ]) {
                         sh '''
-                        docker login -u testuser -p $REGISTRY_TOKEN formation.lan:443
-                        docker push formation.lan:443/stack-java-tomcat:$IMG_TAG
+                        docker login -u testuser -p $REGISTRY_TOKEN jenkins.lan:443
+                        docker push jenkins.lan:443/stack-java-tomcat:$IMG_TAG
                         '''
                     }
                     

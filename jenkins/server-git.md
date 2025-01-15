@@ -43,11 +43,11 @@ Host jenkins.myusine.fr
  UserKnownHostsFile /dev/null
  StrictHostKeyChecking no
 ```
-3. tester la cnx ssh: `ssh -i ~/.ssh/jenkins git@formation.lan`
+3. tester la cnx ssh: `ssh -i ~/.ssh/jenkins git@jenkins.lan`
 
 ## configurer le dépôt distant dans le dépôt client
 
-* `git remote add origin git@formation.lan:dev.git`
+* `git remote add origin git@jenkins.lan:dev.git`
 
 ## pousser les commits sur le dépôt distan en fonction de la branche
 

@@ -2,7 +2,7 @@
 
 ## Exploration
 
-1. checker l'install depuis le controller **formation.lan**
+1. checker l'install depuis le controller **jenkins.lan**
    * `k get nodes`
    * `k cluster-info`
    * `k get pod -A`, à travers tous les namespaces
@@ -56,8 +56,8 @@
 
    ```bash
    k create deployment sample-java \
-     --image formation.lan:443/stack-java-httpd:1.0 \
-     --image formation.lan:443/stack-java-tomcat:1.0 \
+     --image jenkins.lan:443/stack-java-httpd:1.0 \
+     --image jenkins.lan:443/stack-java-tomcat:1.0 \
      --dry-run=client -o yaml > /vagrant/k8s/sample-java-dpl.yml
    ```
 
@@ -80,7 +80,7 @@
 
 ```bash
 # export import docker / export cri (k8s)
-docker save formation.lan:443/stack-java-httpd:1.0 -o httpd.tar
+docker save jenkins.lan:443/stack-java-httpd:1.0 -o httpd.tar
 sudo ctr -n=k8s.io images import httpd.tar
 sudo crictl images | grep httpd
 ```
@@ -125,7 +125,7 @@ k create secret generic regcred \
 
 2. mise à jour de l'image : 
 
-* `k set image -n stack-java deployment/sample-java stack-java-tomcat=formation.lan:443/stack-java-tomcat:1.1`
+* `k set image -n stack-java deployment/sample-java stack-java-tomcat=jenkins.lan:443/stack-java-tomcat:1.1`
   + => trace de changement mais pas d'explication: `k rollout -n stack-java history deployment sample-java`
 
 * MIEUX: IAC `k apply -f ...` + ajout `metada.annotations.kubernetes.io/change-cause`
@@ -151,7 +151,7 @@ k expose -n stack-java deployment sample-java \
 --dry-run=client -o yaml > /vagrant/k8s/sample-java-svc.yml
 ```
 
-### par défaut: on a un **ClusterIP**: 
+#### par défaut: on a un **ClusterIP**: 
   + une IP dispo dans le cluster
   + un port
   + un dns qui est le `metadata.name` accessible dans le namespace
@@ -203,6 +203,69 @@ kubectl get ipaddresspools -n metallb-system
   + désinstaller: `k delete -k .`
 
 
+## installer prometheus / grafana sur le cluster
+
+* helm installé (cf install_k8s.sh)
+* **HELM** est un gestionnaire de paquet pour les *collections de ressources k8s* , A.K.A **Charts**
+
+### gérer les dépôt et le cache (commme apt-get)
+
+```bash
+# ajout d'un dépôt tiers 
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm update repo
+```
+
+### créer des valeurs custom pour notre cluster
+
+* `helm show values prometheus-community/kube-prometheus-stack`
+* pg-custom-values.yml
+
+```yaml
+prometheus:
+  service:
+    type: NodePort
+grafana:
+  service:
+    type: NodePort
+```
+
+* installer avec ces valeurs
+
+```bash
+# créer un namespace pour le monitoring
+k create ns monitoring
+
+# placer le namespace monitoring comme ns par défaut
+# permet d'éviter le -n monitoring sur toutes les commandes !
+k config set-context --current --namespace=monitoring
+
+# install dry-run pour avoir la structure d'un chart
+# utilisant massivement des templates !!!
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack -f /vagrant/k8s/pg-custom-values.yml -n=monitoring --dry-run=client -o yaml > /vagrant/k8s/pg-chart.yml
+
+# Installation avec upgrade dans le ns monitoring déjà configuré et sans dry-run pour le faire vraiment !!!
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack  -f /vagrant/k8s/pg-custom-values.yml 
+
+```
+
+### accéder via le nodePort (n'importe quel noeud sur les ports)
+
+* `k get svc`: TYPE => NodePort , PORTS => xxxxx / yyyyy
+* `k get nodes -o wide`: EXTERNAL-IP => x.y.z.t
+* accéder à `x.y.z.t:xxxxxx` pour prometheus et `x.y.z.t:yyyyy` pour Grafana
+
+### authentfication sur Grafana
+
+```bash
+## username
+k get secret kube-prometheus-stack-grafana -o jsonpath="{.data.admin-user}" | base64 --decode ; echo
+# => admin
+
+k get secret kube-prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+# => prom-operator
+```
+* observer les Dashboards dans grafana pour voir les ressources de base du cluster !!!
 
 
 
